@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Family Secret Santa</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light dark;--bg:#fbf7f2;--card:#fff;--tx:#2a2320;--mu:#7a6f69;--ac:#c0392b;--ac2:#fff;--bd:#e6dcd3}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1715;--card:#26201d;--tx:#f3ece6;--mu:#a89c94;--ac:#e0584a;--ac2:#1b1715;--bd:#3a312c}}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{max-width:520px;margin:0 auto;padding:24px 16px 40px}
+h1{font-size:26px;margin:8px 0 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px}
+.muted{color:var(--mu)}
+select,button{width:100%;box-sizing:border-box;font:inherit;border-radius:10px;padding:12px;margin-top:8px}
+select{color:var(--tx);background:var(--bg);border:1px solid var(--bd)}
+button{font-weight:600;border:0;background:var(--ac);color:var(--ac2);cursor:pointer}
+.res b{display:block;font-size:28px;margin:2px 0 12px}.wl{white-space:pre-wrap}
+</style></head>
+<body><div id="app"></div>
+<script>
+// ORGANIZER: add wishlists here, between the quotes. Use \n for a new line.
+const WISHLISTS = {
+ "Nika": "",
+ "Alla": "",
+ "Inna": "",
+ "Dave": "",
+ "Nicholas": "",
+ "Max": "",
+ "Douglas": ""
+};
+
+// Matches (scrambled so they aren't readable at a glance). Don't edit.
+const DRAW = "eyJOaWthIjogIk1heCIsICJBbGxhIjogIkRvdWdsYXMiLCAiSW5uYSI6ICJBbGxhIiwgIkRhdmUiOiAiTmljaG9sYXMiLCAiTmljaG9sYXMiOiAiRGF2ZSIsICJNYXgiOiAiTmlrYSIsICJEb3VnbGFzIjogIklubmEifQ==";
+
+const KEY = "santa-who";
+const $app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let draw = {};
+try { draw = JSON.parse(atob(DRAW)); } catch (e) {}
+const names = Object.keys(draw);
+if (location.hash === "#reset") { try { localStorage.removeItem(KEY); } catch (e) {} }
+let who = "";
+try { who = localStorage.getItem(KEY) || ""; } catch (e) {}
+if (!draw[who]) who = "";
+
+function show() {
+  let h = "<h1>\ud83c\udf85 Family Secret Santa</h1><div class=\"card\">";
+  if (who) {
+    const t = draw[who], w = WISHLISTS[t] || "";
+    h += "<div class=\"muted\">Hi " + esc(who) + "! You\u2019re buying for</div><div class=\"res\"><b>" + esc(t) + "</b><div class=\"muted\">Their wishlist</div><div class=\"wl\">" + (esc(w) || "Nothing added yet \u2013 check back soon.") + "</div></div>";
+  } else {
+    h += "<label class=\"muted\" for=\"who\">Who are you?</label><select id=\"who\"><option value=\"\">Pick your name\u2026</option>" + names.map(n => "<option>" + esc(n) + "</option>").join("") + "</select><button id=\"go\">That\u2019s me</button><p class=\"muted\">Once you confirm, this can\u2019t be changed on this device.</p>";
+  }
+  $app.innerHTML = h + "</div>";
+  const go = document.getElementById("go");
+  if (go) go.onclick = () => {
+    const n = document.getElementById("who").value;
+    if (!n) return;
+    if (!confirm("Are you " + n + "? You can\u2019t change this afterwards.")) return;
+    try { localStorage.setItem(KEY, n); } catch (e) {}
+    who = n; show();
+  };
+}
+show();
+</script></body></html>
